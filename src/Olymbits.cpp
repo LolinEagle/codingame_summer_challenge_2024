@@ -7,8 +7,7 @@ Olymbits::~Olymbits(){
 }
 
 void	Olymbits::setGlobal(void){
-	cin >> _playerIdx >> _nbGames;
-	cin.ignore();
+	cin >> _playerIdx >> _nbGames; cin.ignore();
 }
 
 void	Olymbits::setScoreInfo(void){
@@ -20,42 +19,93 @@ void	Olymbits::printGlobal(void){
 	cerr << "player_idx:" << _playerIdx << " nb_games:" << _nbGames << endl;
 }
 
-void	Olymbits::setLocal(void){
-	cin >> _gpu >> _reg0 >> _reg1 >> _reg2 >> _reg3 >> _reg4 >> _reg5 >> _reg6;
-	cin.ignore();
+void	Olymbits::setLocal(const int &i){
+	cin >> _gpu[i] >> _reg0[i] >> _reg1[i] >> _reg2[i] >> _reg3[i] >> _reg4[i]
+		>> _reg5[i] >> _reg6[i]; cin.ignore();
 }
 
-void	Olymbits::printLocal(void){
-	cerr << "\ngpu:" << _gpu << "\nreg0:" << _reg0 << " reg1:" << _reg1 <<
-			" reg2:" << _reg2 << " reg3:" << _reg3 << " reg4:" << _reg4 <<
-			" reg5:" << _reg5 << " reg6:" << _reg6 << endl;
+void	Olymbits::printLocal(const int &i){
+	cerr << "\ngpu:" << _gpu[i] << "\nreg0:" << _reg0[i] <<
+			" reg1:" << _reg1[i] << " reg2:" << _reg2[i] <<
+			" reg3:" << _reg3[i] << " reg4:" << _reg4[i] <<
+			" reg5:" << _reg5[i] << " reg6:" << _reg6[i] << endl;
 }
 
-void	Olymbits::reset(void){
-	_up = 0;
-	_left = 0;
-	_down = 0;
-	_right = 0;
+void	MiniGame1Default(const string &sub){
+	if (sub == "...")
+		cout << "RIGHT" << endl;
+	else if (sub[1] == '.')
+		cout << "UP" << endl;
+	else
+		cout << "LEFT" << endl;
+}
+
+bool	MiniGame1Directions(string &sub, int dir){
+	int	i = 0;
+
+	for (string::iterator it = sub.begin(); it != sub.end(); it++){
+		if (*it == '.'){
+			i++;
+		} else if (*it == '#' || it + 1 == sub.end()){
+			if (dir < 3){
+				if (i % 3 != dir)
+					return (false);
+				return (true);
+			} else if (dir == 3){
+				if (i / 3 == 0)
+					return (false);
+				return (true);
+			}
+		}
+	}
+	return (false);
 }
 
 void	Olymbits::MiniGame1(void){
-	int	stun = _playerIdx == 0 ? _reg3 : _playerIdx == 1 ? _reg4 : _reg5;
-
-	if (_gpu == "GAME_OVER" || stun)
+	// Exception
+	if (_gpu[0] == "GAME_OVER"){
+		if (_gpu[3] != "GAME_OVER" && _gpu[3].size() > 1){
+			if (_gpu[3][1] == 'U') cout << "UP" << endl;
+			else if (_gpu[3][1] == 'D') cout << "DOWN" << endl;
+			else if (_gpu[3][1] == 'L') cout << "LEFT" << endl;
+			else cout << "RIGHT" << endl;
+		} else {
+			cout << "UP" << endl;
+		}
 		return ;
-	_gpu += "..";
+	}
 
-	int		pos = _playerIdx == 0 ? _reg0 : _playerIdx == 1 ? _reg1 : _reg2;
-	string	sub = _gpu.substr(pos + 1, 3);
+	// Next move
+	int		pos = _playerIdx == 0 ? _reg0[0] : _playerIdx == 1 ? _reg1[0] : _reg2[0];
+	string	sub = _gpu[0].substr(pos + 1, 3);
 
-	if (sub[0] == '.' && sub[1] == '.' && sub[2] == '.'){
-		_right++;
-	} else if (sub[1] == '.'){
-		_up++;
-		if (sub[0] == '.')
-			_down++;
-	} else if (sub[0] == '.'){
-		_left++;
+	if (sub[0] == '#'){
+		cout << "UP" << endl;
+		return ;
+	}
+	while (sub.size() < 3)
+		sub.push_back('.');
+	
+	string	subAll = _gpu[0].substr(pos + 1);
+	bool	up = MiniGame1Directions(subAll, 2);
+	bool	down = MiniGame1Directions(subAll, 2);
+	bool	left = MiniGame1Directions(subAll, 1);
+	bool	right = MiniGame1Directions(subAll, 3);
+
+	if (_gpu[3] != "GAME_OVER" && _gpu[3].size() > 1){
+		if (up && _gpu[3][1] == 'U' && sub[1] == '.'){
+			cout << "UP" << endl;
+		} else if (down && _gpu[3][1] == 'D' && sub[0] == '.' && sub[1] == '.'){
+			cout << "DOWN" << endl;
+		} else if (left && _gpu[3][1] == 'L' && sub[0] == '.'){
+			cout << "LEFT" << endl;
+		} else if (right && _gpu[3][1] == 'R' && sub == "..."){
+			cout << "RIGHT" << endl;
+		} else {
+			MiniGame1Default(sub);
+		}
+	} else {
+		MiniGame1Default(sub);
 	}
 }
 
@@ -68,7 +118,7 @@ double	find_dist(int x1, int y1, int x2, int y2){
 }
 
 void	Olymbits::MiniGame2(void){
-	if (_gpu == "GAME_OVER")
+	/* if (_gpu == "GAME_OVER")
 		return ;
 
 	int		x = _playerIdx == 0 ? _reg0 : _playerIdx == 1 ? _reg2 : _reg4;
@@ -87,11 +137,11 @@ void	Olymbits::MiniGame2(void){
 	else if (pos[2] < pos[3])
 		_left++;
 	else
-		_right++;
+		_right++;*/
 }
 
 void	Olymbits::MiniGame3(void){
-	int	risk = _playerIdx == 0 ? _reg3 : _playerIdx == 1 ? _reg4 : _reg5;
+	/* int	risk = _playerIdx == 0 ? _reg3 : _playerIdx == 1 ? _reg4 : _reg5;
 
 	if (_gpu == "GAME_OVER" || risk < 0)
 		return ;
@@ -102,11 +152,11 @@ void	Olymbits::MiniGame3(void){
 	if (_gpu[1] == 'U') _up++;
 	else if (_gpu[1] == 'D') _down++;
 	else if (_gpu[1] == 'L') _left++;
-	else _right++;
+	else _right++;*/
 }
 
 void	Olymbits::MiniGame4(void){
-	int	combo = _playerIdx == 0 ? _reg3 : _playerIdx == 1 ? _reg4 : _reg5;
+	/* int	combo = _playerIdx == 0 ? _reg3 : _playerIdx == 1 ? _reg4 : _reg5;
 
 	if (_gpu == "GAME_OVER" || combo == 0)
 		return ;
@@ -117,18 +167,5 @@ void	Olymbits::MiniGame4(void){
 	else if (_gpu[0] == 'L')
 		_left++;
 	else
-		_right++;
-}
-
-void	Olymbits::out(void){
-	cerr << "\nup:" << _up << " down:" << _down << " left:" << _left <<
-			" right:" << _right << endl;
-	if (_up > _down && _up > _left && _up > _right)
-		cout << "UP" << endl;
-	else if (_down > _left && _down > _right)
-		cout << "DOWN" << endl;
-	else if (_left > _right)
-		cout << "LEFT" << endl;
-	else
-		cout << "RIGHT" << endl;
+		_right++;*/
 }
